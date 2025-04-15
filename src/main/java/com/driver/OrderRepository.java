@@ -58,12 +58,12 @@ public class OrderRepository {
     }
 
     public Integer findOrderCountByPartnerId(String partnerId){
-        return partnerToOrderMap.get(partnerId).size();
+        return partnerToOrderMap.getOrDefault(partnerId, new HashSet<>()).size();
         // your code here
     }
 
     public List<String> findOrdersByPartnerId(String partnerId){
-        return new ArrayList<>(partnerToOrderMap.get(partnerId));
+        return new ArrayList<>(partnerToOrderMap.getOrDefault(partnerId, new HashSet<>()));
         // your code here
     }
 
@@ -88,14 +88,22 @@ public class OrderRepository {
     public void deleteOrder(String orderId){
         // your code here
         // delete order by ID
-        String partnerID=orderToPartnerMap.get(orderId);
-        HashSet<String> orders=partnerToOrderMap.get(partnerID);
 
-        DeliveryPartner partner=partnerMap.get(partnerID);
-        partner.setNumberOfOrders(partner.getNumberOfOrders()-1);
+            if(orderToPartnerMap.containsKey(orderId)){
+                String partnerID = orderToPartnerMap.get(orderId);
+                HashSet<String> orders = partnerToOrderMap.getOrDefault(partnerID, new HashSet<>());
+                orders.remove(orderId);
 
-        orderToPartnerMap.remove(orderId);
-        orderMap.remove(orderId);
+                DeliveryPartner partner = partnerMap.get(partnerID);
+                if(partner != null){
+                    partner.setNumberOfOrders(partner.getNumberOfOrders() - 1);
+                }
+
+                orderToPartnerMap.remove(orderId);
+            }
+            orderMap.remove(orderId);
+
+
     }
 
     public Integer findCountOfUnassignedOrders(){
